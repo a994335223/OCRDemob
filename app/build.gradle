@@ -1,0 +1,73 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+def releaseTime() {
+    return new Date().format("yyyy-MM-dd", TimeZone.getDefault())
+}
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.baidu.ocr.demo"
+        minSdkVersion 14
+        targetSdkVersion 28
+        versionCode 668
+        versionName "6.6.8"
+    }
+    signingConfigs {
+        release {
+            try {
+                storeFile file("./keystore/gsjd.jks")
+                storePassword '666666'
+                keyAlias "gsjd"
+                keyPassword '666666'
+            } catch (ex) {
+                throw new InvalidUserDataException(ex.toString())
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            buildConfigField "boolean", "TEST_DEBUG_MODE", "false"
+            buildConfigField "String", "TEST_BASE_URL", "\"https://www.base.com\""
+            buildConfigField "String", "TEST_IMAGE_URL", "\"https://www.image.com\""
+            buildConfigField "String", "TEST_FILE_URL", "\"https://www.file.com\""
+            debuggable true
+            signingConfig signingConfigs.release
+        }
+        release {
+            buildConfigField "boolean", "TEST_DEBUG_MODE", "true"
+            buildConfigField "String", "TEST_BASE_URL", "\"https://www.release.base.com\""
+            buildConfigField "String", "TEST_IMAGE_URL", "\"https://www.release.image.com\""
+            buildConfigField "String", "TEST_FILE_URL", "\"https://www.release.file.com\""
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable false
+            signingConfig signingConfigs.release
+        }
+    }
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "GZJD-${variant.versionCode}-${variant.versionName}-${releaseTime()}.apk"
+        }
+    }
+    compileOptions {
+        targetCompatibility = "8"
+        sourceCompatibility = "8"
+    }
+
+}
+
+dependencies {
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    api 'com.android.support:appcompat-v7:28.0.0'
+    api files('libs/ocr-sdk.jar')
+    api project(path: ':ocr_ui')
+    implementation 'com.android.support.constraint:constraint-layout:2.0.0-beta1'
+    implementation("com.squareup.okhttp3:okhttp:3.14.2")
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation project(path: ':sdk')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+}
